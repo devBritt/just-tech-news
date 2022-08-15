@@ -37,7 +37,7 @@ async function loginFormHandler(event) {
     event.preventDefault();
 
     // retrieve user input
-    const username = document.querySelector('#username-login').value.trim();
+    const email = document.querySelector('#email-login').value.trim();
     const password = document.querySelector('#password-login').value.trim();
 
     // use fetch() to POST login request
@@ -53,6 +53,7 @@ async function loginFormHandler(event) {
 
         if (response.ok) {
             console.log('success');
+            document.location.replace('/');
         } else {
             alert(response.statusText);
         }

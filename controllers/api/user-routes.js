@@ -63,13 +63,25 @@ router.post('/', (req, res) => {
         email: req.body.email,
         password: req.body.password
     })
-        .then(dbUserData => res.json(dbUserData))
+        .then(dbUserData => {
+            req.session.save(() => {
+                // give server access to user id
+                req.session.user_id = dbUserData.id;
+                // give server access to username
+                req.session.username = dbUserData.username;
+                // keep user logged in
+                req.session.loggedIn = true;
+
+                res.json(dbUserData);
+            });
+        })
         .catch(err => {
             console.log(err);
             res.status(500).json(err);
         })
 });
 
+// POST /api/login
 router.post('/login', (req, res) => {
     // expects {email: 'emailString', password: 'passwordString'}
     User.findOne({
@@ -90,9 +102,28 @@ router.post('/login', (req, res) => {
             return;
         }
 
-        res.json({ user: dbUserData, message: 'You are now logged in!' });
+        req.session.save(() => {
+            // declare session variables
+            req.session.user_id = dbUserData.id;
+            req.session.username = dbUserData.username;
+            req.session.loggedIn = true;
+
+            res.json({ user: dbUserData, message: 'You are now logged in!' });
+        });
     })
-})
+});
+
+// POST /api/logout
+router.post('/logout', (req, res) => {
+    // end user session when they logout
+    if (req.session.loggedIn) {
+        req.session.destroy(() => {
+            res.status(204).end();
+        });
+    } else {
+        res.status(404).end();
+    }
+});
 
 // PUT /api/users/:id
 router.put('/:id', (req, res) => {
