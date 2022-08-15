@@ -92,13 +92,16 @@ router.post('/', (req, res) => {
 
 // update a post with an upvote
 router.put('/upvote', (req, res) => {
-    // custom static method for Post to create a vote and add it to a post's vote count
-    Post.upvote(req.body, { Vote })
-        .then(updatedPostData => res.json(updatedPostData))
+    // make sure the session exists first
+    if (req.session) {
+        // custom static method for Post to create a vote and add it to a post's vote count
+        Post.upvote({ ...req.body, user_id: req.session.user_id }, { Vote, Comment, User })
+        .then(updatedVoteData => res.json(updatedVoteData))
         .catch(err => {
             console.log(err);
-            res.status(400).json(err);
+            res.status(500).json(err);
         });
+    }
 });
 
 // update a post by id
